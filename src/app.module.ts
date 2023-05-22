@@ -16,6 +16,7 @@ import { ConfigModule } from '@nestjs/config';
       password: process.env.DB_PASSWORD,
       database: 'nestdb',
       // Tablas que debe cargar
+      // Cualquier carpeta dentro de este proyecto que tenga un archivo .entity se va a cargar
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       // Para que al modificarse una clase se cree la tabla
       // Nuestra clase siempre se va a ver reflejada en nuestra db

@@ -6,7 +6,7 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 @Entity({ name: 'users' })
 class User {
   // Qué columnas quiero que tenga mi tabla
-  // PrimaryGeneratedColumn() es un decorador que nos permite generar los id's de de manera automática e indicar que son una Primary Key.
+  // PrimaryGeneratedColumn() es un decorador que nos permite generar los id's de manera automática e indicar que son una Primary Key.
   @PrimaryGeneratedColumn()
   id: number;
   @Column({ unique: true })
