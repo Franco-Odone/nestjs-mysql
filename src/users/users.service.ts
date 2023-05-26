@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -14,24 +15,57 @@ export class UsersService {
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
   // Recordar que estamos en una clase por lo que this. se usa para indicar el uso de parámetros del constructor en el mimso método
-  createUser(user: CreateUserDto) {
-    const newUser = this.userRepository.create(user);
-    return this.userRepository.save(newUser);
+  async getUsers() {
+    return await this.userRepository.find();
   }
 
-  getUsers() {
-    return this.userRepository.find();
-  }
-
-  getUserById(id: number) {
-    return this.userRepository.findOne({
+  async getUserById(id: number) {
+    const userFound = await this.userRepository.findOne({
       where: {
         id,
       },
     });
+
+    return !userFound
+      ? new HttpException('Usuario no encontrado...', HttpStatus.NOT_FOUND)
+      : userFound;
   }
 
-  deleteUser(id: number) {
-    return this.userRepository.delete({ id });
+  async createUser(user: CreateUserDto) {
+    const userFound = await this.userRepository.findOne({
+      where: {
+        username: user.username,
+      },
+    });
+
+    const newUser = this.userRepository.create(user);
+
+    return userFound
+      ? new HttpException('Nombre de usuario ya existe...', HttpStatus.CONFLICT)
+      : this.userRepository.save(newUser);
+  }
+
+  async deleteUser(id: number) {
+    const userFound = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+    });
+
+    return !userFound
+      ? new HttpException('Usuario no encontrado...', HttpStatus.NOT_FOUND)
+      : await this.userRepository.delete({ id });
+  }
+
+  async updateUser(id: number, user: UpdateUserDto) {
+    const userFound = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+    });
+
+    return userFound.username === user.username
+      ? new HttpException('Nombre de usuario ya existe...', HttpStatus.CONFLICT)
+      : await this.userRepository.update({ id }, user);
   }
 }
