@@ -4,6 +4,8 @@ import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateProfileDto } from './dto/create-profile.dto';
+import { Profile } from './profile.entity';
 
 @Injectable()
 export class UsersService {
@@ -13,10 +15,13 @@ export class UsersService {
   // entre <> se indica que el repositorio contiene un tipo de dato que en este caso es el usuario que hemos importado (entity)
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(Profile) private profileRepository: Repository<Profile>,
   ) {}
   // Recordar que estamos en una clase por lo que this. se usa para indicar el uso de parámetros del constructor en el mimso método
   async getUsers() {
-    return await this.userRepository.find();
+    // La función "find" incluye la propiedad "relations" con el valor ["profile"], lo que indica que se debe incluir la propiedad
+    // relacionada en la respuesta.
+    return await this.userRepository.find({ relations: ['profile'] });
   }
 
   async getUserById(id: number) {
@@ -67,5 +72,21 @@ export class UsersService {
     return userFound.username === user.username
       ? new HttpException('Nombre de usuario ya existe...', HttpStatus.CONFLICT)
       : await this.userRepository.update({ id }, user);
+  }
+
+  async createProfile(id: number, profile: CreateProfileDto) {
+    const userFound = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+    });
+
+    const newProfile = this.profileRepository.create(profile);
+    const savedProfile = await this.profileRepository.save(newProfile);
+    userFound.profile = savedProfile;
+
+    return !userFound
+      ? new HttpException('User not found', HttpStatus.NOT_FOUND)
+      : this.userRepository.save(userFound);
   }
 }
