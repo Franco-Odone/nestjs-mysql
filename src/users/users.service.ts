@@ -21,7 +21,7 @@ export class UsersService {
   async getUsers() {
     // La función "find" incluye la propiedad "relations" con el valor ["profile"], lo que indica que se debe incluir la propiedad
     // relacionada en la respuesta.
-    return await this.userRepository.find({ relations: ['profile'] });
+    return await this.userRepository.find({ relations: ['profile', 'posts'] });
   }
 
   async getUserById(id: number) {

@@ -5,8 +5,10 @@ import {
   PrimaryGeneratedColumn,
   OneToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Profile } from './profile.entity';
+import { Post } from 'src/posts/post.entity';
 
 // Lo que se coloca adentro del decorador Column() es para la table y lo que está debajo es para Typescript.
 //{ name: 'users'} es el nombre de la tabla que se va a crear, debe ser en plural.
@@ -35,6 +37,9 @@ class User {
   @OneToOne(() => Profile)
   @JoinColumn()
   profile: Profile;
+
+  @OneToMany(() => Post, (post) => post.author)
+  posts: Post[];
 }
 
 export { User };
